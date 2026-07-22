@@ -11,6 +11,7 @@ venv/
 data/*.sqlite3
 data/*.sqlite3-*
 data/rag_index/
+data/discovery_state.json
 logs/*.log
 
 # IDE

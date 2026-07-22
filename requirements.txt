@@ -6,6 +6,7 @@ pyyaml>=6.0
 python-dotenv>=1.0
 requests>=2.32
 beautifulsoup4>=4.12
+feedparser>=6.0
 python-frontmatter>=1.1
 
 # Фаза 2 — PDF (локальные + arXiv/bioRxiv)

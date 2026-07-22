@@ -28,3 +28,54 @@ vault_layout:
     immortality: Areas/Immortality
   projects: Projects
   tags: Tags
+
+discovery:
+  lookback_days: 14
+  max_per_run: 12
+  state_path: data/discovery_state.json
+  topics:
+    prompt-engineering:
+      - prompt engineering
+      - system prompt
+      - prompting
+      - context engineering
+      - retrieval augmented generation
+    vibe-coding:
+      - vibe coding
+      - agentic coding
+      - coding agent
+      - ai developer tools
+      - software engineering agent
+    longevity:
+      - longevity
+      - healthy aging
+      - ageing
+      - senolytics
+      - lifespan
+    immortality:
+      - radical life extension
+      - biological immortality
+      - rejuvenation
+      - cryonics
+      - age reversal
+  sources:
+    - name: OpenAI News
+      url: https://openai.com/news/rss.xml
+      topics: [prompt-engineering, vibe-coding]
+      priority: 5
+    - name: Google AI
+      url: https://blog.google/technology/ai/rss/
+      topics: [prompt-engineering, vibe-coding]
+      priority: 3
+    - name: GitHub Changelog
+      url: https://github.blog/changelog/feed/
+      topics: [vibe-coding]
+      priority: 3
+    - name: arXiv AI
+      url: "https://export.arxiv.org/api/query?search_query=cat:cs.AI&start=0&max_results=40&sortBy=submittedDate&sortOrder=descending"
+      topics: [prompt-engineering, vibe-coding]
+      priority: 4
+    - name: arXiv Quantitative Biology
+      url: "https://export.arxiv.org/api/query?search_query=cat:q-bio&start=0&max_results=40&sortBy=submittedDate&sortOrder=descending"
+      topics: [longevity, immortality]
+      priority: 4
