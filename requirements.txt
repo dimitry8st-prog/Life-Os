@@ -14,6 +14,9 @@ pypdf>=5.0
 # Фаза 4 — YouTube-транскрипты
 youtube-transcript-api>=0.6
 
+# Дашборд
+streamlit>=1.40
+
 # Тесты
 pytest>=8.0
 
