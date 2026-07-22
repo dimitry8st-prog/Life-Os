@@ -59,3 +59,12 @@ CREATE TABLE IF NOT EXISTS pipeline_log (
     message    TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+
+-- Пользовательское состояние чтения для дашборда
+CREATE TABLE IF NOT EXISTS reading_state (
+    item_id       INTEGER PRIMARY KEY REFERENCES items(id) ON DELETE CASCADE,
+    is_read       INTEGER NOT NULL DEFAULT 0 CHECK (is_read IN (0, 1)),
+    is_favorite   INTEGER NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1)),
+    updated_at    TEXT NOT NULL DEFAULT (datetime('now'))
+);
