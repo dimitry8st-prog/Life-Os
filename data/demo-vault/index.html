@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life OS — Кристаллический свиток знаний</title>
+
+  <!-- Google Fonts: Inter, JetBrains Mono, Playfair Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════
+       CSS-переменные — палитра кристаллического свитка
+       ═══════════════════════════════════════════ */
+    :root {
+      --bg-primary: #fafafa;
+      --bg-secondary: #f0f2f5;
+      --accent-blue: #1a5cff;
+      --accent-azure: #4a8aff;
+      --accent-cobalt: #0033cc;
+      --accent-red: #dc3545;
+      --text-ink: #1a1f36;
+      --text-muted: #5a6278;
+      --white: #ffffff;
+      --glow-blue: rgba(26, 92, 255, 0.15);
+      --glow-red: rgba(220, 53, 69, 0.25);
+      --border-blue: rgba(26, 92, 255, 0.2);
+      --font-main: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --nav-height: 72px;
+      --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ═══ Сброс и базовые стили ═══ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: var(--nav-height);
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-primary);
+      color: var(--text-ink);
+      line-height: 1.65;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ═══ Фиксированная навигация ═══ */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-height);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.25rem, 4vw, 3rem);
+      background: rgba(250, 250, 250, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-blue);
+      transition: box-shadow var(--transition);
+    }
+
+    .nav.scrolled {
+      box-shadow: 0 4px 30px var(--glow-blue);
+    }
+
+    /* Логотип — инициалка в красном круге (печать мага) */
+    .nav__logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .nav__seal {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.15rem;
+      box-shadow: 0 0 16px var(--glow-red);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .nav__logo:hover .nav__seal {
+      transform: scale(1.08);
+      box-shadow: 0 0 24px var(--glow-red);
+    }
+
+    .nav__links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav__links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      position: relative;
+      transition: color var(--transition);
+    }
+
+    .nav__links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0;
+      width: 0; height: 2px;
+      background: var(--accent-blue);
+      transition: width var(--transition);
+    }
+
+    .nav__links a:hover {
+      color: var(--accent-blue);
+    }
+
+    .nav__links a:hover::after { width: 100%; }
+
+    /* Бургер-меню (мобильная версия) */
+    .nav__burger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .nav__burger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--accent-cobalt);
+      transition: var(--transition);
+      border-radius: 2px;
+    }
+
+    .nav__burger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .nav__burger.active span:nth-child(2) { opacity: 0; }
+    .nav__burger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    /* ═══ Герой-блок ═══ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: calc(var(--nav-height) + 2rem) 1.5rem 4rem;
+      overflow: hidden;
+      /* Градиент: белый → голубоватое сияние (свет сквозь витраж) */
+      background: linear-gradient(
+        165deg,
+        var(--white) 0%,
+        #f5f8ff 40%,
+        #e8f0ff 75%,
+        #dce8ff 100%
+      );
+    }
+
+    /* Геометрические фигуры — чертёж древнего ордена */
+    .hero__geometry {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .hero__geometry .circle {
+      position: absolute;
+      border: 1px solid rgba(26, 92, 255, 0.12);
+      border-radius: 50%;
+    }
+
+    .hero__geometry .circle--1 {
+      width: 600px; height: 600px;
+      top: -150px; right: -100px;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .hero__geometry .circle--2 {
+      width: 400px; height: 400px;
+      bottom: -80px; left: -60px;
+      border-color: rgba(74, 138, 255, 0.15);
+      animation: float 16s ease-in-out infinite reverse;
+    }
+
+    .hero__geometry .circle--3 {
+      width: 200px; height: 200px;
+      top: 40%; left: 15%;
+      border-color: rgba(0, 51, 204, 0.08);
+      animation: float 12s ease-in-out infinite;
+    }
+
+    .hero__geometry .line {
+      position: absolute;
+      background: linear-gradient(90deg, transparent, rgba(26, 92, 255, 0.1), transparent);
+      height: 1px;
+    }
+
+    .hero__geometry .line--1 { width: 80%; top: 30%; left: 10%; transform: rotate(-8deg); }
+    .hero__geometry .line--2 { width: 60%; bottom: 25%; right: 5%; transform: rotate(5deg); }
+
+    /* Звёздная пыльца — мерцание на фоне героя */
+    .hero__stardust {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .hero__stardust span {
+      position: absolute;
+      width: 3px; height: 3px;
+      background: var(--accent-azure);
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle var(--dur, 4s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; transform: scale(0.5); }
+      50% { opacity: 0.7; transform: scale(1); box-shadow: 0 0 8px var(--accent-azure); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(15px, -20px) rotate(2deg); }
+      66% { transform: translate(-10px, 10px) rotate(-1deg); }
+    }
+
+    .hero__content {
+      position: relative;
+      z-index: 2;
+      max-width: 820px;
+    }
+
+    /* Заголовок с чернильным оттенком (text-shadow на синий) */
+    .hero__title {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--text-ink);
+      text-shadow: 0 2px 24px rgba(26, 92, 255, 0.18),
+                   0 1px 2px rgba(0, 51, 204, 0.1);
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero__title em {
+      font-style: italic;
+      color: var(--accent-cobalt);
+    }
+
+    .hero__subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto 2.5rem;
+      font-weight: 400;
+    }
+
+    /* Красная кнопка — печать мага, мягкое свечение */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 2rem;
+      background: var(--accent-red);
+      color: var(--white);
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px var(--glow-red), 0 0 40px rgba(220, 53, 69, 0.1);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--glow-red), 0 0 50px rgba(220, 53, 69, 0.2);
+    }
+
+    .btn-primary svg {
+      width: 18px; height: 18px;
+      transition: transform var(--transition);
+    }
+
+    .btn-primary:hover svg { transform: translateY(3px); }
+
+    /* ═══ Общие секции ═══ */
+    section {
+      padding: 5rem clamp(1.25rem, 4vw, 3rem);
+    }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent-blue);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: var(--text-ink);
+      margin-bottom: 1rem;
+      text-shadow: 0 1px 12px rgba(26, 92, 255, 0.08);
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      max-width: 600px;
+      margin-bottom: 3rem;
+    }
+
+    /* Fade-in при скролле */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ═══ Секция «О системе» ═══ */
+    .about {
+      background: var(--bg-primary);
+    }
+
+    .about__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .about__text p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .about__text p strong {
+      color: var(--accent-cobalt);
+      font-weight: 600;
+    }
+
+    /* Витрина vault-папок */
+    .vault-explorer { margin-top: 0.5rem; }
+
+    .vault-portal {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .vault-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1rem;
+      background: var(--white);
+      border: 1px solid var(--border-blue);
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-ink);
+      font-family: var(--font-main);
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    }
+
+    .vault-tab:hover,
+    .vault-tab.active {
+      transform: translateY(-3px);
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 20px var(--glow-blue);
+    }
+
+    .vault-tab.active {
+      border-color: var(--accent-cobalt);
+      background: linear-gradient(135deg, var(--white), #f5f8ff);
+    }
+
+    .vault-tab .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      flex-shrink: 0;
+    }
+
+    .vault-tab .dot--red { background: var(--accent-red); box-shadow: 0 0 8px var(--glow-red); }
+
+    .vault-tab .chevron {
+      margin-left: auto;
+      width: 16px; height: 16px;
+      color: var(--accent-blue);
+      transition: transform var(--transition);
+    }
+
+    .vault-tab.active .chevron { transform: rotate(180deg); }
+
+    /* Выпадающая панель раздела */
+    .vault-panel {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      margin-top: 0;
+      transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.4s ease, margin-top 0.4s ease;
+    }
+
+    .vault-panel.open {
+      max-height: 75vh;
+      opacity: 1;
+      margin-top: 1.25rem;
+    }
+
+    .vault-panel__inner {
+      background: var(--white);
+      border: 1px solid var(--border-blue);
+      border-radius: 14px;
+      box-shadow: 0 0 30px var(--glow-blue);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .vault-panel__inner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-red), var(--accent-blue), transparent);
+    }
+
+    .vault-panel__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-blue);
+      background: linear-gradient(135deg, #fafafa, #f5f8ff);
+    }
+
+    .vault-panel__title {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent-cobalt);
+    }
+
+    .vault-panel__open {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent-red);
+      padding: 0.35rem 0.75rem;
+      border: 1px solid rgba(220, 53, 69, 0.3);
+      border-radius: 6px;
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+
+    .vault-panel__open:hover {
+      background: rgba(220, 53, 69, 0.06);
+      box-shadow: 0 0 12px var(--glow-red);
+    }
+
+    .vault-panel__body {
+      min-height: 200px;
+      max-height: 60vh;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .vault-panel__body .page {
+      padding: 1.25rem 1.5rem 2rem;
+      max-width: none;
+      margin: 0;
+    }
+
+    .vault-panel__loading {
+      padding: 3rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .vault-panel__loading::after {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      margin-left: 6px;
+      background: var(--accent-blue);
+      border-radius: 50%;
+      animation: pulse 1s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* ═══ Секция «Компоненты» — 3 карточки ═══ */
+    .components {
+      background: var(--bg-secondary);
+      position: relative;
+    }
+
+    .components::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-blue), transparent);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border-blue);
+      border-radius: 14px;
+      padding: 2rem 1.75rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    }
+
+    /* Красная линия внизу карточки */
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 1.75rem; right: 1.75rem;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent-red), transparent);
+      opacity: 0.6;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 20px var(--glow-blue), 0 12px 40px rgba(26, 92, 255, 0.08);
+    }
+
+    .card__icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(26, 92, 255, 0.08), rgba(74, 138, 255, 0.15));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      color: var(--accent-blue);
+    }
+
+    .card__icon svg { width: 24px; height: 24px; }
+
+    .card__title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      color: var(--text-ink);
+    }
+
+    .card__text {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .card__tag {
+      display: inline-block;
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(26, 92, 255, 0.06);
+      color: var(--accent-blue);
+      border-radius: 4px;
+    }
+
+    /* ═══ Секция «Принципы» ═══ */
+    .principles {
+      background: var(--bg-primary);
+    }
+
+    .principles__list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+      max-width: 900px;
+      margin: 0 auto;
+      list-style: none;
+    }
+
+    .principles__list li {
+      display: flex;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--white);
+      border: 1px solid var(--border-blue);
+      border-radius: 10px;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      transition: box-shadow var(--transition);
+    }
+
+    .principles__list li:hover {
+      box-shadow: 0 0 16px var(--glow-blue);
+    }
+
+    .principles__num {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent-red);
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    /* ═══ Секция с цитатой ═══ */
+    .quote {
+      background: linear-gradient(135deg, #f5f8ff 0%, #e8f0ff 50%, #f0f2f5 100%);
+      text-align: center;
+      padding: 5rem 1.5rem;
+      position: relative;
+    }
+
+    .quote__divider {
+      width: 60px;
+      height: 3px;
+      background: var(--accent-red);
+      margin: 0 auto 2rem;
+      border-radius: 2px;
+      box-shadow: 0 0 12px var(--glow-red);
+    }
+
+    .quote__text {
+      font-family: var(--font-display);
+      font-size: clamp(1.3rem, 3vw, 1.85rem);
+      font-style: italic;
+      color: var(--accent-cobalt);
+      max-width: 700px;
+      margin: 0 auto 1.5rem;
+      line-height: 1.5;
+      text-shadow: 0 1px 8px rgba(0, 51, 204, 0.06);
+    }
+
+    .quote__author {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* ═══ Footer ═══ */
+    .footer {
+      background: var(--white);
+      border-top: 1px solid var(--border-blue);
+      padding: 2.5rem clamp(1.25rem, 4vw, 3rem);
+    }
+
+    .footer__inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .footer__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .footer__seal {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .footer__links {
+      display: flex;
+      gap: 1.75rem;
+      list-style: none;
+    }
+
+    .footer__links a {
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: color var(--transition);
+    }
+
+    .footer__links a.blue { color: var(--accent-blue); }
+    .footer__links a.blue:hover { color: var(--accent-cobalt); }
+    .footer__links a.red { color: var(--accent-red); }
+    .footer__links a.red:hover { color: #b02a37; }
+
+    .footer__copy {
+      width: 100%;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(26, 92, 255, 0.08);
+    }
+
+    /* ═══ Мобильная адаптивность ═══ */
+    @media (max-width: 900px) {
+      .cards { grid-template-columns: 1fr; max-width: 440px; }
+      .about__grid { grid-template-columns: 1fr; }
+      .principles__list { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav__burger { display: flex; }
+
+      .nav__links {
+        position: fixed;
+        top: var(--nav-height);
+        left: 0; right: 0;
+        flex-direction: column;
+        background: rgba(250, 250, 250, 0.97);
+        backdrop-filter: blur(16px);
+        padding: 1.5rem 2rem 2rem;
+        gap: 1.25rem;
+        border-bottom: 1px solid var(--border-blue);
+        transform: translateY(-120%);
+        opacity: 0;
+        transition: transform var(--transition), opacity var(--transition);
+        pointer-events: none;
+      }
+
+      .nav__links.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .nav__links a { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ НАВИГАЦИЯ ═══ -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav__logo">
+      <span class="nav__seal">L</span>
+      Life OS
+    </a>
+
+    <button class="nav__burger" id="burger" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class="nav__links" id="navLinks">
+      <li><a href="#about">О системе</a></li>
+      <li><a href="#components">Компоненты</a></li>
+      <li><a href="#principles">Принципы</a></li>
+      <li><a href="#contacts">Контакты</a></li>
+    </ul>
+  </nav>
+
+  <!-- ═══ ГЕРОЙ ═══ -->
+  <header class="hero" id="hero">
+    <!-- Геометрия фона -->
+    <div class="hero__geometry" aria-hidden="true">
+      <div class="circle circle--1"></div>
+      <div class="circle circle--2"></div>
+      <div class="circle circle--3"></div>
+      <div class="line line--1"></div>
+      <div class="line line--2"></div>
+    </div>
+
+    <!-- Звёздная пыльца (генерируется JS) -->
+    <div class="hero__stardust" id="stardust" aria-hidden="true"></div>
+
+    <div class="hero__content reveal">
+      <h1 class="hero__title">
+        Порядок знаний —<br><em>кристаллический свиток</em>
+      </h1>
+      <p class="hero__subtitle">
+        Персональная система управления знаниями. Автоматический конвейер:
+        от ссылки до структурированной заметки в Obsidian.
+      </p>
+      <a href="#about" class="btn-primary">
+        Узнать больше
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ═══ О СИСТЕМЕ ═══ -->
+  <section class="about" id="about">
+    <div class="reveal">
+      <p class="section-label">// vault.init()</p>
+      <h2 class="section-title">Архитектура знаний</h2>
+      <p class="section-desc">
+        Life OS превращает хаос информации в упорядоченную базу.
+        Каждый материал проходит через конвейер и обретает форму.
+      </p>
+    </div>
+
+    <div class="about__grid">
+      <div class="about__text reveal">
+        <p>
+          <strong>Вход</strong> — URL, PDF, текст или YouTube.
+          Система извлекает контент, классифицирует по области
+          (промпт-инжиниринг, вайб-кодинг, долголетие, бессмертие)
+          и создаёт заметку со строгим форматом.
+        </p>
+        <p>
+          <strong>Выход</strong> — структурированный Markdown в Obsidian,
+          запись в SQLite, связи через локальный RAG-индекс.
+          Ошибки не прерывают процесс — всё логируется.
+        </p>
+      </div>
+
+      <!-- Портал: клик → выпадающая панель с содержимым раздела -->
+      <div class="vault-explorer reveal">
+        <div class="vault-portal" id="vaultTabs">
+          <button type="button" class="vault-tab" data-path="Inbox/index.html" data-title="Inbox">
+            <span class="dot dot--red"></span> Inbox
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <button type="button" class="vault-tab" data-path="Areas/index.html" data-title="Areas">
+            <span class="dot"></span> Areas
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <button type="button" class="vault-tab" data-path="Notes/index.html" data-title="Notes">
+            <span class="dot"></span> Notes
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <button type="button" class="vault-tab" data-path="Projects/index.html" data-title="Projects">
+            <span class="dot"></span> Projects
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <button type="button" class="vault-tab" data-path="Tags/index.html" data-title="Tags">
+            <span class="dot"></span> Tags
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <button type="button" class="vault-tab" data-path="Areas/Prompt-Engineering/index.html" data-title="Prompt Engineering">
+            <span class="dot dot--red"></span> Prompt Engineering
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </div>
+
+        <div class="vault-panel" id="vaultPanel" aria-hidden="true">
+          <div class="vault-panel__inner">
+            <div class="vault-panel__head">
+              <span class="vault-panel__title" id="vaultPanelTitle">Раздел</span>
+              <a href="#" class="vault-panel__open" id="vaultPanelOpen" target="_blank">Открыть полностью →</a>
+            </div>
+            <div class="vault-panel__body" id="vaultPanelBody">
+              <div class="vault-panel__loading">Загрузка раздела</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ КОМПОНЕНТЫ ═══ -->
+  <section class="components" id="components">
+    <div class="reveal">
+      <p class="section-label">// stack.modules</p>
+      <h2 class="section-title">Три столпа системы</h2>
+      <p class="section-desc">
+        Каждый модуль — грань кристалла. Вместе они образуют
+        целостную архитектуру управления знаниями.
+      </p>
+    </div>
+
+    <div class="cards">
+      <!-- Карточка: Obsidian -->
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+          </svg>
+        </div>
+        <h3 class="card__title">Obsidian</h3>
+        <p class="card__text">
+          Хранилище знаний в Markdown. Строгий формат заметок:
+          frontmatter, саммари, ключевые идеи, научный блок.
+          Граф связей между идеями.
+        </p>
+        <span class="card__tag">vault.md</span>
+      </article>
+
+      <!-- Карточка: RAG -->
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+          </svg>
+        </div>
+        <h3 class="card__title">RAG</h3>
+        <p class="card__text">
+          Локальный индекс TF-IDF с чанкингом и косинусным поиском.
+          Автоматические связи related между заметками.
+          Дедупликация по SHA-256.
+        </p>
+        <span class="card__tag">rag.index()</span>
+      </article>
+
+      <!-- Карточка: Python-агенты -->
+      <article class="card reveal">
+        <div class="card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <h3 class="card__title">Python-агенты</h3>
+        <p class="card__text">
+          Конвейер на Python 3.12: извлечение, классификация через
+          Claude API, авто-раскладка по областям, YouTube-транскрипты,
+          arXiv и bioRxiv.
+        </p>
+        <span class="card__tag">capture.py</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ═══ ПРИНЦИПЫ ═══ -->
+  <section class="principles" id="principles">
+    <div class="reveal">
+      <p class="section-label">// core.rules</p>
+      <h2 class="section-title">Принципы ордена</h2>
+      <p class="section-desc">
+        Жёсткие правила, которые делают систему надёжной
+        и предсказуемой — как кодекс древнего братства знаний.
+      </p>
+    </div>
+
+    <ul class="principles__list">
+      <li class="reveal">
+        <span class="principles__num">01</span>
+        Никогда не перезаписывать существующие заметки — только создавать новые
+      </li>
+      <li class="reveal">
+        <span class="principles__num">02</span>
+        Ошибки логируются, но не прерывают конвейер — устойчивость превыше всего
+      </li>
+      <li class="reveal">
+        <span class="principles__num">03</span>
+        Теги только из существующих в хранилище — новые предлагаются, не создаются
+      </li>
+      <li class="reveal">
+        <span class="principles__num">04</span>
+        Низкая уверенность → other + #needs-review, заметка остаётся в Inbox
+      </li>
+      <li class="reveal">
+        <span class="principles__num">05</span>
+        API-ключи только из .env — секреты вне кода и конфигов
+      </li>
+      <li class="reveal">
+        <span class="principles__num">06</span>
+        Windows-совместимость: pathlib, utf-8, кроссплатформенные команды
+      </li>
+    </ul>
+  </section>
+
+  <!-- ═══ ЦИТАТА ═══ -->
+  <section class="quote">
+    <div class="reveal">
+      <div class="quote__divider"></div>
+      <blockquote class="quote__text">
+        «Знание, не упорядоченное — шум.
+        Знание, структурированное — сила.»
+      </blockquote>
+      <p class="quote__author">— Life OS Manifesto</p>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER / КОНТАКТЫ ═══ -->
+  <footer class="footer" id="contacts">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <span class="footer__seal">L</span>
+        Life OS
+      </div>
+      <ul class="footer__links">
+        <li><a href="#about" class="blue">О системе</a></li>
+        <li><a href="#components" class="blue">Компоненты</a></li>
+        <li><a href="Areas/Prompt-Engineering/index.html" class="red">Заметки</a></li>
+        <li><a href="#principles" class="blue">Принципы</a></li>
+      </ul>
+      <p class="footer__copy">
+        Life OS · Персональная система управления знаниями · 2026
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    /* ═══════════════════════════════════════════
+       JS: звёздная пыльца, скролл-анимации, бургер
+       ═══════════════════════════════════════════ */
+
+    // --- Генерация звёздной пыльцы на герое ---
+    (function createStardust() {
+      const container = document.getElementById('stardust');
+      const count = 40;
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('span');
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.setProperty('--dur', (3 + Math.random() * 4) + 's');
+        star.style.setProperty('--delay', (Math.random() * 5) + 's');
+        const size = 2 + Math.random() * 3;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        container.appendChild(star);
+      }
+    })();
+
+    // --- Intersection Observer: fade-in при скролле ---
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          // Каскадная задержка для элементов в одной секции
+          const siblings = entry.target.parentElement.querySelectorAll('.reveal');
+          let delay = 0;
+          siblings.forEach((s, idx) => {
+            if (s === entry.target) delay = idx * 100;
+          });
+          setTimeout(() => entry.target.classList.add('visible'), delay);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    revealEls.forEach(el => observer.observe(el));
+
+    // Показать герой сразу
+    document.querySelector('.hero .reveal').classList.add('visible');
+
+    // --- Тень навигации при скролле ---
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 20);
+    }, { passive: true });
+
+    // --- Бургер-меню (мобильная версия) ---
+    const burger = document.getElementById('burger');
+    const navLinks = document.getElementById('navLinks');
+
+    burger.addEventListener('click', () => {
+      burger.classList.toggle('active');
+      navLinks.classList.toggle('open');
+    });
+
+    // Закрытие меню при клике на ссылку
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        burger.classList.remove('active');
+        navLinks.classList.remove('open');
+      });
+    });
+
+    // --- Выпадающие панели разделов vault ---
+    const vaultPanel = document.getElementById('vaultPanel');
+    const vaultPanelBody = document.getElementById('vaultPanelBody');
+    const vaultPanelTitle = document.getElementById('vaultPanelTitle');
+    const vaultPanelOpen = document.getElementById('vaultPanelOpen');
+    let activeTab = null;
+
+    function openVaultSection(tab) {
+      const path = tab.dataset.path;
+      const title = tab.dataset.title;
+
+      if (activeTab === tab && vaultPanel.classList.contains('open')) {
+        vaultPanel.classList.remove('open');
+        vaultPanel.setAttribute('aria-hidden', 'true');
+        tab.classList.remove('active');
+        activeTab = null;
+        return;
+      }
+
+      document.querySelectorAll('.vault-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeTab = tab;
+
+      vaultPanelTitle.textContent = title;
+      vaultPanelOpen.href = path;
+      vaultPanelBody.innerHTML = '<div class="vault-panel__loading">Загрузка</div>';
+      vaultPanel.classList.add('open');
+      vaultPanel.setAttribute('aria-hidden', 'false');
+      vaultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      fetch(path)
+        .then(r => r.text())
+        .then(html => {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const page = doc.querySelector('.page');
+          if (!page) throw new Error('empty');
+          page.querySelector('.breadcrumbs')?.remove();
+          vaultPanelBody.innerHTML = page.outerHTML;
+        })
+        .catch(() => {
+          vaultPanelBody.innerHTML = '<div class="vault-panel__loading">Запустите OTKRYT SAJT.bat v papke demo-vault</div>';
+        });
+    }
+
+    document.querySelectorAll('.vault-tab').forEach(tab => {
+      tab.addEventListener('click', () => openVaultSection(tab));
+    });
+
+    // Если открыто через file:// — подсказка в консоли; через http:// всё работает
+    if (location.protocol === 'file:') {
+      const hint = document.createElement('p');
+      hint.style.cssText = 'margin-top:1rem;font-size:0.78rem;color:#5a6278;';
+      hint.textContent = 'Tip: run OTKRYT SAJT.bat in demo-vault folder.';
+      document.querySelector('.vault-explorer')?.appendChild(hint);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Life OS — зависимости
+
+# Ядро (фазы 1-4)
+anthropic>=0.40.0
+pyyaml>=6.0
+python-dotenv>=1.0
+requests>=2.32
+beautifulsoup4>=4.12
+python-frontmatter>=1.1
+
+# Фаза 2 — PDF (локальные + arXiv/bioRxiv)
+pypdf>=5.0
+
+# Фаза 4 — YouTube-транскрипты
+youtube-transcript-api>=0.6
+
+# Тесты
+pytest>=8.0
+
+# RAG (фаза 3) реализован на чистом Python (TF-IDF) — доп. зависимостей нет.
+# При желании слой эмбеддингов можно заменить на sentence-transformers.

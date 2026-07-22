@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Life OS</title>
+<HTA:APPLICATION
+  ID="LifeOSLauncher"
+  APPLICATIONNAME="Life OS"
+  BORDER="none"
+  BORDERSTYLE="normal"
+  CAPTION="yes"
+  ICON="launcher.ico"
+  MAXIMIZEBUTTON="no"
+  MINIMIZEBUTTON="yes"
+  SHOWINTASKBAR="yes"
+  SINGLEINSTANCE="yes"
+  SYSMENU="yes"
+  VERSION="1.0"
+  WINDOWSTATE="normal"
+  SCROLL="no"
+/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(165deg, #ffffff 0%, #f5f8ff 45%, #e8f0ff 100%);
+    color: #1a1f36;
+    user-select: none;
+  }
+
+  .bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .bg .c1 {
+    position: absolute; width: 280px; height: 280px; top: -80px; right: -60px;
+    border: 1px solid rgba(26, 92, 255, 0.14); border-radius: 50%;
+  }
+  .bg .c2 {
+    position: absolute; width: 180px; height: 180px; bottom: -40px; left: -30px;
+    border: 1px solid rgba(74, 138, 255, 0.18); border-radius: 50%;
+  }
+  .bg .line {
+    position: absolute; width: 70%; left: 15%; top: 38%;
+    height: 1px; background: linear-gradient(90deg, transparent, rgba(26,92,255,0.12), transparent);
+    transform: rotate(-6deg);
+  }
+
+  .wrap {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; padding: 28px 32px 24px; text-align: center;
+  }
+
+  .seal {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #dc3545; color: #fff;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 26px; font-weight: bold; line-height: 52px;
+    box-shadow: 0 0 20px rgba(220, 53, 69, 0.35);
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px; font-weight: bold; letter-spacing: -0.02em;
+    text-shadow: 0 1px 12px rgba(26, 92, 255, 0.15);
+    margin-bottom: 6px;
+  }
+
+  .sub {
+    font-size: 12px; color: #5a6278; line-height: 1.5;
+    max-width: 280px; margin-bottom: 28px;
+  }
+
+  .btn {
+    display: inline-block;
+    min-width: 220px;
+    padding: 14px 28px;
+    border: none; border-radius: 10px;
+    background: #dc3545; color: #fff;
+    font-size: 14px; font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(220, 53, 69, 0.35), 0 0 40px rgba(220, 53, 69, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(220, 53, 69, 0.45);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .btn.loading {
+    opacity: 0.85; cursor: wait;
+    background: #1a5cff;
+    box-shadow: 0 6px 24px rgba(26, 92, 255, 0.3);
+  }
+
+  .hint {
+    margin-top: 18px; font-size: 10px; color: #8a92a8;
+    font-family: Consolas, 'Courier New', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .status {
+    margin-top: 10px; font-size: 11px; color: #1a5cff;
+    min-height: 16px;
+  }
+</style>
+</head>
+<body ondragstart="return false" onselectstart="return false">
+  <div class="bg">
+    <div class="c1"></div>
+    <div class="c2"></div>
+    <div class="line"></div>
+  </div>
+
+  <div class="wrap">
+    <div class="seal">L</div>
+    <h1>Life OS</h1>
+    <p class="sub">Кристаллический свиток знаний.<br>Нажмите, чтобы открыть хранилище.</p>
+
+    <button class="btn" id="openBtn" onclick="launch()">Открыть свиток</button>
+
+    <p class="status" id="status"></p>
+    <p class="hint">127.0.0.1:8765</p>
+  </div>
+
+<script type="text/javascript">
+  var PORT = 8765;
+  var URL = 'http://127.0.0.1:' + PORT + '/index.html';
+
+  function getProjectDir() {
+    var fso = new ActiveXObject('Scripting.FileSystemObject');
+    var path = location.pathname.replace(/^\//, '').replace(/\//g, '\\');
+    try { path = decodeURI(path); } catch (e) {}
+    return fso.GetParentFolderName(path);
+  }
+
+  function portOpen() {
+    try {
+      var xhr = new ActiveXObject('MSXML2.XMLHTTP');
+      xhr.open('GET', URL, false);
+      xhr.send();
+      return xhr.status === 200 || xhr.status === 0;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function launch() {
+    var btn = document.getElementById('openBtn');
+    var status = document.getElementById('status');
+    btn.className = 'btn loading';
+    btn.disabled = true;
+    btn.innerText = 'Запуск...';
+    status.innerText = 'Подключение к хранилищу';
+
+    var shell = new ActiveXObject('WScript.Shell');
+    var dir = getProjectDir();
+    shell.CurrentDirectory = dir;
+
+    if (!portOpen()) {
+      var py = dir + '\\.venv\\Scripts\\python.exe';
+      var fso = new ActiveXObject('Scripting.FileSystemObject');
+      var cmd;
+      if (fso.FileExists(py)) {
+        cmd = 'cmd /c start "Life OS" /min "' + py + '" serve_vault.py';
+      } else {
+        cmd = 'cmd /c start "Life OS" /min python serve_vault.py';
+      }
+      shell.Run(cmd, 0, false);
+
+      var waited = 0;
+      var timer = setInterval(function() {
+        waited += 300;
+        if (portOpen() || waited > 8000) {
+          clearInterval(timer);
+          openBrowser(shell, status, btn);
+        }
+      }, 300);
+    } else {
+      status.innerText = 'Сервер уже запущен';
+      openBrowser(shell, status, btn);
+    }
+  }
+
+  function openBrowser(shell, status, btn) {
+    shell.Run(URL, 1, false);
+    status.innerText = 'Готово';
+    btn.innerText = 'Открыто';
+    setTimeout(function() { window.close(); }, 600);
+  }
+
+  window.resizeTo(400, 340);
+</script>
+</body>
+</html>

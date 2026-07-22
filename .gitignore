@@ -1,0 +1,21 @@
+# Секреты
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Данные и логи
+data/*.sqlite3
+data/*.sqlite3-*
+data/rag_index/
+logs/*.log
+
+# IDE
+.idea/
+.vscode/
+
+# pytest
+.pytest_cache/

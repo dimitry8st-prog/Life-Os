@@ -1,0 +1,30 @@
+project_name: Life OS
+vault_path: C:\Users\user\Desktop\МОЁ РАЗВИТИЕ\LIfe OS\life-os\data\demo-vault
+claude:
+  model: claude-sonnet-4-6
+  max_tokens: 4000
+thresholds:
+  auto_area: 0.85
+  needs_review: 0.55
+  related_similarity: 0.75
+  related_top_k: 5
+rag:
+  chunk_size: 800
+  chunk_overlap: 120
+  embedding_model: local
+  index_path: data/rag_index
+database:
+  path: data/lifeos.sqlite3
+logging:
+  dir: logs
+  level: INFO
+vault_layout:
+  inbox: Inbox
+  notes: Notes
+  areas:
+    prompt-engineering: Areas/Prompt-Engineering
+    vibe-coding: Areas/Vibe-Coding
+    longevity: Areas/Longevity
+    immortality: Areas/Immortality
+  projects: Projects
+  tags: Tags
