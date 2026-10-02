@@ -1,0 +1,124 @@
+{
+  "name": "Life-OS — MIT RSS → Notion",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://news.mit.edu/rss/feed",
+        "options": {}
+      },
+      "id": "rss",
+      "name": "MIT RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nreturn $input.all().filter(item => {\n  const j = item.json || {};\n  const url = j.link || j.guid || \"\";\n  if (!url || seen.has(url)) return false;\n  seen.add(url);\n  const text = ((j.title || \"\") + \" \" + (j.contentSnippet || j.content || \"\")).toLowerCase();\n  const keywords = [\"ai\",\"artificial intelligence\",\"machine learning\",\"neural\",\"brain\",\"health\",\"medical\",\"medicine\",\"aging\",\"ageing\",\"longevity\",\"biomedical\",\"robot\",\"public health\",\"neuroscience\"];\n  if (!keywords.some(k => text.includes(k))) return false;\n  item.json.lifeos = {\n    source: \"MIT News\",\n    url,\n    title: j.title || \"MIT News\",\n    published_at: j.isoDate || j.pubDate || null,\n    collected_at: new Date().toISOString(),\n    country: \"США\",\n    tags: [\"MIT\"]\n  };\n  return true;\n});"
+      },
+      "id": "filter",
+      "name": "Filter Life-OS Topics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  parent: { database_id: \"cea26d5e03174361941646f498465a77\" },\n  properties: {\n    \"Материал\": { title: [{ text: { content: $json.lifeos.title } }] },\n    \"Источник\": { rich_text: [{ text: { content: \"MIT News\" } }] },\n    \"URL\": { url: $json.lifeos.url },\n    \"Страна\": { select: { name: \"США\" } },\n    \"Теги\": { multi_select: [{ name: \"MIT\" }] },\n    \"Статус\": { status: { name: \"Not started\" } },\n    \"Решение\": { select: { name: \"Нужна проверка\" } },\n    \"Доказательность\": { select: { name: \"Не оценено\" } },\n    \"Дата сбора\": { date: { start: $json.lifeos.collected_at } },\n    \"Краткий отчёт\": { rich_text: [{ text: { content: ($json.contentSnippet || \"\").slice(0,1800) } }] }\n  }\n}) }}"
+      },
+      "id": "notion",
+      "name": "Create Notion Item",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [
+        [
+          {
+            "node": "MIT RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MIT RSS": {
+      "main": [
+        [
+          {
+            "node": "Filter Life-OS Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Life-OS Topics": {
+      "main": [
+        [
+          {
+            "node": "Create Notion Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
