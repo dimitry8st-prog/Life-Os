@@ -8,13 +8,13 @@
           "interval": [
             {
               "field": "hours",
-              "hoursInterval": 6
+              "hoursInterval": 168
             }
           ]
         }
       },
       "id": "schedule",
-      "name": "Every 6 Hours",
+      "name": "Every 7 Days",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -84,17 +84,6 @@
     }
   ],
   "connections": {
-    "Every 6 Hours": {
-      "main": [
-        [
-          {
-            "node": "MIT RSS",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "MIT RSS": {
       "main": [
         [
@@ -111,6 +100,17 @@
         [
           {
             "node": "Create Notion Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every 7 Days": {
+      "main": [
+        [
+          {
+            "node": "MIT RSS",
             "type": "main",
             "index": 0
           }
