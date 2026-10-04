@@ -1,5 +1,5 @@
 {
-  "name": "Life-OS — MIT RSS → Notion",
+  "name": "Life-OS — MIT RSS → портал → Notion",
   "active": false,
   "nodes": [
     {
@@ -34,14 +34,15 @@
       "position": [
         240,
         0
-      ]
+      ],
+      "alwaysOutputData": true
     },
     {
       "parameters": {
-        "jsCode": "const seen = new Set();\nreturn $input.all().filter(item => {\n  const j = item.json || {};\n  const url = j.link || j.guid || \"\";\n  if (!url || seen.has(url)) return false;\n  seen.add(url);\n  const text = ((j.title || \"\") + \" \" + (j.contentSnippet || j.content || \"\")).toLowerCase();\n  const keywords = [\"ai\",\"artificial intelligence\",\"machine learning\",\"neural\",\"brain\",\"health\",\"medical\",\"medicine\",\"aging\",\"ageing\",\"longevity\",\"biomedical\",\"robot\",\"public health\",\"neuroscience\"];\n  if (!keywords.some(k => text.includes(k))) return false;\n  item.json.lifeos = {\n    source: \"MIT News\",\n    url,\n    title: j.title || \"MIT News\",\n    published_at: j.isoDate || j.pubDate || null,\n    collected_at: new Date().toISOString(),\n    country: \"США\",\n    tags: [\"MIT\"]\n  };\n  return true;\n});"
+        "jsCode": "const seen = new Set();\nconst materials = [];\nconst patterns = [\n  ['science-longevity', /\\b(aging|ageing|longevity|geroscience|senescence|healthspan)\\b/i],\n  ['science-neuro', /\\b(neural|brain|health|medical|medicine|biomedical|neuroscience|neurology)\\b/i],\n  ['science-ai', /\\b(ai|artificial intelligence|machine learning|robot(?:s|ics)?|engineering)\\b/i]\n];\nfor (const item of $input.all()) {\n  const j = item.json || {};\n  const raw = j.link || j.guid || '';\n  if (!/^https:\\/\\/news\\.mit\\.edu\\//i.test(raw) || !j.title) continue;\n  const url = raw.split('#')[0];\n  if (seen.has(url)) continue;\n  seen.add(url);\n  const summary = String(j.contentSnippet || j.description || '').replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\n  const text = String(j.title) + ' ' + summary;\n  const match = patterns.find(([key, pattern]) => pattern.test(text));\n  if (!match) continue;\n  materials.push({stream: match[0], title: String(j.title).slice(0,500), source_url: url,\n    summary: summary.slice(0,2000), published_date: String(j.isoDate || j.pubDate || '').slice(0,100)});\n}\nif (materials.length > 100) throw new Error('More than 100 MIT records; split the batch before import.');\nreturn [{json: {materials}}];"
       },
       "id": "filter",
-      "name": "Filter Life-OS Topics",
+      "name": "Prepare MIT Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -50,62 +51,258 @@
       ]
     },
     {
+      "parameters": {},
+      "id": "manual",
+      "name": "Manual Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        220
+      ]
+    },
+    {
       "parameters": {
         "method": "POST",
-        "url": "https://api.notion.com/v1/pages",
+        "url": "https://st8dom.ru/api/life-os/mit/import/",
+        "authentication": "genericCredentialType",
+        "options": {
+          "timeout": 30000
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json) }}"
+      },
+      "id": "import",
+      "name": "Save on Portal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://st8dom.ru/api/life-os/mit/pending/",
+        "authentication": "genericCredentialType",
+        "options": {
+          "timeout": 30000
+        },
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "id": "pending",
+      "name": "Load Pending Reports",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "return ($input.first().json.reports || []).map(report => ({json: report, pairedItem: {item: 0}}));"
+      },
+      "id": "split",
+      "name": "Pending Reports",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/data_sources/a3e72293-ab18-4615-9105-ee345d7b9294/query",
         "authentication": "predefinedCredentialType",
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1000
+            }
+          }
+        },
         "nodeCredentialType": "notionApi",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Notion-Version",
-              "value": "2022-06-28"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
+              "value": "2025-09-03"
             }
           ]
         },
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({\n  parent: { database_id: \"cea26d5e03174361941646f498465a77\" },\n  properties: {\n    \"Материал\": { title: [{ text: { content: $json.lifeos.title } }] },\n    \"Источник\": { rich_text: [{ text: { content: \"MIT News\" } }] },\n    \"URL\": { url: $json.lifeos.url },\n    \"Страна\": { select: { name: \"США\" } },\n    \"Теги\": { multi_select: [{ name: \"MIT\" }] },\n    \"Статус\": { status: { name: \"Not started\" } },\n    \"Решение\": { select: { name: \"Нужна проверка\" } },\n    \"Доказательность\": { select: { name: \"Не оценено\" } },\n    \"Дата сбора\": { date: { start: $json.lifeos.collected_at } },\n    \"Краткий отчёт\": { rich_text: [{ text: { content: ($json.contentSnippet || \"\").slice(0,1800) } }] }\n  }\n}) }}"
+        "body": "={{ JSON.stringify({filter: {property: \"URL\", url: {equals: $json.portal_url}}, page_size: 2}) }}"
       },
-      "id": "notion",
+      "id": "query",
+      "name": "Find Notion Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        260
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "if (!Array.isArray($json.results)) throw new Error('Invalid Notion query response');\nif ($json.results.length > 1 || $json.has_more) throw new Error('Multiple Notion reports found; resolve duplicates manually');\nconst report = $('Pending Reports').item.json;\nreturn {json: {...report, needs_create: $json.results.length === 0, notion_page_id: $json.results[0]?.id || null}};"
+      },
+      "id": "resolve",
+      "name": "Resolve Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "new",
+              "leftValue": "={{ $json.needs_create }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if",
+      "name": "New Report?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "authentication": "predefinedCredentialType",
+        "options": {
+          "timeout": 30000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1000
+            }
+          }
+        },
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Notion-Version",
+              "value": "2025-09-03"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({parent: {type: \"data_source_id\", data_source_id: \"a3e72293-ab18-4615-9105-ee345d7b9294\"}, properties: {\n\"Материал\": {title: [{text: {content: $json.title}}]},\n\"URL\": {url: $json.portal_url},\n\"Краткий отчёт\": {rich_text: [{text: {content: $json.report || \"Анонс MIT News. Требует проверки первоисточника.\"}}]}\n}}) }}"
+      },
+      "id": "create",
       "name": "Create Notion Item",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        720,
-        0
+        480,
+        260
       ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://st8dom.ru/api/life-os/mit/reports/' + $('Resolve Report').item.json.id + '/ack/' }}",
+        "authentication": "genericCredentialType",
+        "options": {
+          "timeout": 30000
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({notion_page_id: $json.id}) }}"
+      },
+      "id": "ack-new",
+      "name": "Confirm New Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        260
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://st8dom.ru/api/life-os/mit/reports/' + $json.id + '/ack/' }}",
+        "authentication": "genericCredentialType",
+        "options": {
+          "timeout": 30000
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({notion_page_id: $json.notion_page_id}) }}"
+      },
+      "id": "ack-existing",
+      "name": "Confirm Existing Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        500
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
     }
   ],
   "connections": {
-    "MIT RSS": {
-      "main": [
-        [
-          {
-            "node": "Filter Life-OS Topics",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filter Life-OS Topics": {
-      "main": [
-        [
-          {
-            "node": "Create Notion Item",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Every 7 Days": {
       "main": [
         [
@@ -116,9 +313,129 @@
           }
         ]
       ]
+    },
+    "Manual Test": {
+      "main": [
+        [
+          {
+            "node": "MIT RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MIT RSS": {
+      "main": [
+        [
+          {
+            "node": "Prepare MIT Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare MIT Batch": {
+      "main": [
+        [
+          {
+            "node": "Save on Portal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save on Portal": {
+      "main": [
+        [
+          {
+            "node": "Load Pending Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Pending Reports": {
+      "main": [
+        [
+          {
+            "node": "Pending Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pending Reports": {
+      "main": [
+        [
+          {
+            "node": "Find Notion Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Notion Report": {
+      "main": [
+        [
+          {
+            "node": "Resolve Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Report": {
+      "main": [
+        [
+          {
+            "node": "New Report?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Report?": {
+      "main": [
+        [
+          {
+            "node": "Create Notion Item",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Confirm Existing Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Notion Item": {
+      "main": [
+        [
+          {
+            "node": "Confirm New Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "timezone": "Europe/Moscow",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none"
   }
 }
